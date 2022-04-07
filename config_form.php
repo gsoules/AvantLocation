@@ -2,9 +2,11 @@
 $view = get_view();
 
 $currentElementName = LocationConfig::getOptionTextForCurrent();
+$moveBy = LocationConfig::getOptionTextForWho();
+$moveDate = LocationConfig::getOptionTextForDate();
 $historyElementName = LocationConfig::getOptionTextForHistory();
 $historyColumns = LocationConfig::getOptionTextForHistoryColumns();
-$notesElementName = LocationConfig::getOptionTextForNotes();
+$locationElementName = LocationConfig::getOptionTextForLocation();
 $statusElementName = LocationConfig::getOptionTextForStatus();
 $storageElementName = LocationConfig::getOptionTextForStorage();
 
@@ -46,11 +48,11 @@ $storageElementName = LocationConfig::getOptionTextForStorage();
 
 <div class="field">
     <div class="two columns alpha">
-        <label><?php echo CONFIG_LABEL_LOCATION_NOTES; ?></label>
+        <label><?php echo CONFIG_LABEL_LOCATION; ?></label>
     </div>
     <div class="inputs five columns omega">
-        <p class="explanation"><?php echo __("The element used to store notes about an item's location."); ?></p>
-        <?php echo $view->formText(LocationConfig::OPTION_LOCATION_NOTES, $notesElementName); ?>
+        <p class="explanation"><?php echo __("The element used to store an item's public read-only location (optional)."); ?></p>
+        <?php echo $view->formText(LocationConfig::OPTION_LOCATION, $locationElementName); ?>
     </div>
 </div>
 
@@ -71,5 +73,25 @@ $storageElementName = LocationConfig::getOptionTextForStorage();
     <div class="inputs five columns omega">
         <p class="explanation"><?php echo __("The names of the columns in the location history."); ?></p>
         <?php echo $view->formText(LocationConfig::OPTION_LOCATION_HISTORY_COLUMNS, $historyColumns); ?>
+    </div>
+</div>
+
+<div class="field">
+    <div class="two columns alpha">
+        <label><?php echo CONFIG_LABEL_LOCATION_DATE; ?></label>
+    </div>
+    <div class="inputs five columns omega">
+        <p class="explanation"><?php echo __("The date an item was moved (optional)."); ?></p>
+        <?php echo $view->formText(LocationConfig::OPTION_LOCATION_DATE, $moveDate); ?>
+    </div>
+</div>
+
+<div class="field">
+    <div class="two columns alpha">
+        <label><?php echo CONFIG_LABEL_LOCATION_WHO; ?></label>
+    </div>
+    <div class="inputs five columns omega">
+        <p class="explanation"><?php echo __("The person who moved an item (optional)."); ?></p>
+        <?php echo $view->formText(LocationConfig::OPTION_LOCATION_WHO, $moveBy); ?>
     </div>
 </div>
