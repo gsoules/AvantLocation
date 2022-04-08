@@ -137,6 +137,9 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
                 $newFirstRow = "";
         }
 
+        // Recreate the history, skipping any blank rows. If the user intentionally left the first
+        // row blank to mean that they want to update the history without adding a new first row,
+        // no new first row will be added because $newFirstRow will be blank and thus skipped.
         $newHistory = $newFirstRow;
         foreach ($existingRows as $row)
         {
