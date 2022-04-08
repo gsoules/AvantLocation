@@ -113,15 +113,16 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
 
         $historyLocation = $temporaryLocation;
 
-        if ($temporaryLocation == __("<none>"))
+        if ($temporaryLocation == "" || $temporaryLocation == __("<none>"))
         {
             // Get the storage location.
             $storageElementName = LocationConfig::getOptionTextForStorage();
             $storageElementId = ItemMetadata::getElementIdForElementName($storageElementName);
             $historyLocation = ItemMetadata::getElementTextFromElementId($item, $storageElementId);
 
-            // Set the temporary location to blank.
-            ItemMetadata::updateElementText($item, $temporaryElementId, "");
+            // Convert <none> to blank.
+            if ($temporaryLocation == __("<none>"))
+                ItemMetadata::updateElementText($item, $temporaryElementId, "");
         }
 
         // Get the location history.
