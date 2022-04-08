@@ -2,6 +2,8 @@
 
 class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
 {
+    protected $locationHistoryChanged = false;
+
     protected $_hooks = array(
         'admin_head',
         'after_save_item',
@@ -9,8 +11,6 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
         'config',
         'config_form',
         'initialize',
-        'install',
-        'public_footer',
         'public_head'
     );
 
@@ -39,7 +39,7 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
     public function hookBeforeSaveItem($args)
     {
         $item = $args['record'];
-        //$this->validateLocationValues($item);
+        $this->detectLocationHistoryChange($item);
     }
 
     public function hookConfig()
@@ -55,14 +55,6 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
     public function hookInitialize()
     {
         add_translation_source(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'languages');
-    }
-
-    public function hookInstall()
-    {
-    }
-
-    public function hookPublicFooter($args)
-    {
     }
 
     public function hookPublicHead($args)
@@ -92,6 +84,9 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
 
     protected function createHistoryRow($item): void
     {
+        if (!$this->locationHistoryChanged)
+            return;
+
         // Get the information that will go into a new history row.
         $date = LocationConfig::getOptionTextForDate();
         if ($date == "")
@@ -121,25 +116,15 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
         $existingRows = array_map('trim', explode(PHP_EOL, $oldHistory));
         $oldFirstRow = count($existingRows) > 0 ? $existingRows[0] : "";
 
-        // When the old first row is blank, that means, don't update the history.
-        $newFirstRow = "";
-        if ($oldFirstRow != "")
-        {
-            // Create a new first row.
-            $newFirstRow = "$date | $status | $currentLocation | $who";
-        }
+        // Create a new first row.
+        $newFirstRow = "$date | $status | $currentLocation | $who";
 
         // Compare the new and old first rows, ignoring case and white space.
-        // If they match, don't create a new history row.
-        if ($oldFirstRow)
-        {
-            if (strtolower(str_replace(' ', '', $newFirstRow)) == strtolower(str_replace(' ', '', $oldFirstRow)))
-                $newFirstRow = "";
-        }
+        // If they match, don't add a new row.
+        if (strtolower(str_replace(' ', '', $newFirstRow)) == strtolower(str_replace(' ', '', $oldFirstRow)))
+            $newFirstRow = "";
 
-        // Recreate the history, skipping any blank rows. If the user intentionally left the first
-        // row blank to mean that they want to update the history without adding a new first row,
-        // no new first row will be added because $newFirstRow will be blank and thus skipped.
+        // Create a new history starting with the new first row. Discard any blank rows.
         $newHistory = $newFirstRow;
         foreach ($existingRows as $row)
         {
@@ -155,34 +140,18 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
         ItemMetadata::updateElementText($item, $historyElementId, $newHistory);
     }
 
-    protected function validateLocationValues($item): void
+    protected function detectLocationHistoryChange($item): void
     {
-        // This method ensures that both the location status and current location changed
-        // or that neither changed. It reports an error if only one or the other changed.
-
+        // Get the old location status and current location values;
         $statusElementName = LocationConfig::getOptionTextForStatus();
         $currentElementName = LocationConfig::getOptionTextForCurrent();
         $status = ItemMetadata::getElementTextForElementName($item, $statusElementName);
         $currentLocation = ItemMetadata::getElementTextForElementName($item, $currentElementName);
 
-        // Get the form values for status and current location.
+        // Get the form values for the location status and current location.
         $newStatus = AvantCommon::getPostTextForElementName($statusElementName);
         $newCurrent = AvantCommon::getPostTextForElementName($currentElementName);
 
-        // Determine if both or neither of the status and current location values changed.
-        $statusChanged = $newStatus != $status;
-        $currentChanged = $newCurrent != $currentLocation;
-
-        if (!$statusChanged && !$currentChanged)
-            return;
-
-        if ($statusChanged && $currentChanged)
-            return;
-
-        // Report an error when the status changed but the current value stayed the same and vice-versa.
-        if ($statusChanged)
-            AvantElements::addError($item, $statusElementName, __('When you change the location status you must also change current location.'));
-        if ($currentChanged)
-            AvantElements::addError($item, $currentElementName, __('When you change the current location you must also change the location status.'));
+        $this->locationHistoryChanged = $newStatus != $status || $newCurrent != $currentLocation;
     }
 }
