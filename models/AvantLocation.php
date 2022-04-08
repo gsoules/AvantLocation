@@ -4,8 +4,9 @@ class AvantLocation
 {
     public static function filterHistory($item, $elementId, $text)
     {
-        $titles = array_map('trim', explode('|', LocationConfig::getOptionTextForHistoryColumns()));
+        // Emit the HTML for the location history table.
 
+        $titles = array_map('trim', explode('|', LocationConfig::getOptionTextForHistoryColumns()));
         $html = "<table class='location-history'>";
         $rows = array_map('trim', explode(PHP_EOL, $text));
 

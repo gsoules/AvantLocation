@@ -32,72 +32,22 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
     {
         $item = $args['record'];
 
-        $locationElementName = LocationConfig::getOptionTextForLocation();
+        $this->assignPublicLocationValue($item);
 
-        if (strlen($locationElementName) == 0)
-            return;
+        $status = ItemMetadata::getElementTextForElementName($item, LocationConfig::getOptionTextForStatus());
+        $currentLocation = ItemMetadata::getElementTextForElementName($item, LocationConfig::getOptionTextForCurrent());
 
-        $locationElementId = ItemMetadata::getElementIdForElementName($locationElementName);
-
-        $locationValue = "";
-        $rule = 3;
-        switch ($rule)
-        {
-            case LocationConfig::LOCATION_RULE_HIDE:
-                $locationValue = "";
-                break;
-
-            case LocationConfig::LOCATION_RULE_STATUS:
-            case LocationConfig::LOCATION_RULE_LOCATION:
-                $statusElementName = LocationConfig::getOptionTextForStatus();
-                $status = ItemMetadata::getElementTextForElementName($item, $statusElementName);
-                $locationValue = $status;
-
-                if ($rule == LocationConfig::LOCATION_RULE_LOCATION)
-                {
-                    $currentElementName = LocationConfig::getOptionTextForCurrent();
-                    $current = ItemMetadata::getElementTextForElementName($item, $currentElementName);
-                    $locationValue .= " : $current";
-                }
-                break;
-        }
-
-
-        ItemMetadata::updateElementText($item, $locationElementId, $locationValue);
+        $this->createHistoryRow($item, $status, $currentLocation);
     }
 
     public function hookBeforeSaveItem($args)
     {
         $item = $args['record'];
 
-        $statusElementName = LocationConfig::getOptionTextForStatus();
-        $oldStatus = ItemMetadata::getElementTextForElementName($item, $statusElementName);
-        $currentElementName = LocationConfig::getOptionTextForCurrent();
-        $oldCurrent = ItemMetadata::getElementTextForElementName($item, $currentElementName);
+        $status = ItemMetadata::getElementTextForElementName($item, LocationConfig::getOptionTextForStatus());
+        $currentLocation = ItemMetadata::getElementTextForElementName($item, LocationConfig::getOptionTextForCurrent());
 
-        $newStatus = AvantCommon::getPostTextForElementName($statusElementName);
-        $newCurrent = AvantCommon::getPostTextForElementName($currentElementName);
-
-        $statusChanged = $newStatus != $oldStatus;
-        $currentChanged = $newCurrent != $oldCurrent;
-
-        if (!$statusChanged && !$currentChanged)
-            return;
-
-        if ($statusChanged && $currentChanged)
-            return;
-
-        if ($statusChanged)
-        {
-            AvantElements::addError($item, $statusElementName, __('When you change the location status you must also change current location.'));
-            return;
-        }
-
-        if ($currentChanged)
-        {
-            AvantElements::addError($item, $currentElementName, __('When you change the current location you must also change the location status.'));
-            return;
-        }
+        $this->validateLocationValues($item, $status, $currentLocation);
     }
 
     public function hookConfig()
@@ -117,7 +67,6 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
 
     public function hookInstall()
     {
-        LocationConfig::setDefaultOptionValues();
     }
 
     public function hookPublicFooter($args)
@@ -127,5 +76,69 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
     public function hookPublicHead($args)
     {
         $this->head();
+    }
+
+    protected function assignPublicLocationValue($item): void
+    {
+        // Get the element, if one exists, that's used to show the item's public location.
+        $publicElementName = LocationConfig::getOptionTextForPublic();
+        if (strlen($publicElementName) == 0)
+            return;
+
+        // Get the private location status.
+        $statusElementName = LocationConfig::getOptionTextForStatus();
+        $status = ItemMetadata::getElementTextForElementName($item, $statusElementName);
+
+        // Determine if the private status can be used as the public location.
+        $allowedValues = array_map('trim', explode(',', LocationConfig::getOptionTextForPublicValues()));
+        $publicValue = in_array($status, $allowedValues) ? $status : "";
+
+        // Set the value of the public location element.
+        $publicElementId = ItemMetadata::getElementIdForElementName($publicElementName);
+        ItemMetadata::updateElementText($item, $publicElementId, $publicValue);
+    }
+
+    protected function createHistoryRow($item, $status, $currentLocation): void
+    {
+        $date = LocationConfig::getOptionTextForDate();
+        $who = LocationConfig::getOptionTextForWho();
+
+        $row = "$date | $status | $currentLocation | $who";
+
+        $historyElementName = LocationConfig::getOptionTextForHistory();
+        $historyElementId = ItemMetadata::getElementIdForElementName($historyElementName);
+
+        $history = AvantCommon::getPostTextForElementName($historyElementName);
+
+
+        //$history = ItemMetadata::getElementTextForElementName($item, $historyElementName);
+        $history = $row . "<br />" . PHP_EOL . $history;
+        ItemMetadata::updateElementText($item, $historyElementId, $history);
+    }
+
+    protected function validateLocationValues($item, $status, $currentLocation): void
+    {
+        $statusElementName = LocationConfig::getOptionTextForStatus();
+        $currentElementName = LocationConfig::getOptionTextForCurrent();
+
+        // Get the form values for status and current location.
+        $newStatus = AvantCommon::getPostTextForElementName($statusElementName);
+        $newCurrent = AvantCommon::getPostTextForElementName($currentElementName);
+
+        // Determine if both or neither of the status and current location values changed.
+        $statusChanged = $newStatus != $status;
+        $currentChanged = $newCurrent != $currentLocation;
+
+        if (!$statusChanged && !$currentChanged)
+            return;
+
+        if ($statusChanged && $currentChanged)
+            return;
+
+        // Report an error when the status changed but the current value stayed the same and vice-versa.
+        if ($statusChanged)
+            AvantElements::addError($item, $statusElementName, __('When you change the location status you must also change current location.'));
+        if ($currentChanged)
+            AvantElements::addError($item, $currentElementName, __('When you change the current location you must also change the location status.'));
     }
 }

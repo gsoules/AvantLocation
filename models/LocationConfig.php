@@ -1,30 +1,26 @@
 <?php
 
-define('CONFIG_LABEL_LOCATION', __('Location Element'));
 define('CONFIG_LABEL_LOCATION_CURRENT', __('Current Location Element'));
 define('CONFIG_LABEL_LOCATION_DATE', __('Location Move Date'));
 define('CONFIG_LABEL_LOCATION_HISTORY', __('Location History Element'));
 define('CONFIG_LABEL_LOCATION_HISTORY_COLUMNS', __('Location History Columns'));
-define('CONFIG_LABEL_LOCATION_RULE', __('Location Rule'));
+define('CONFIG_LABEL_LOCATION_PUBLIC', __('Public Location Element'));
+define('CONFIG_LABEL_LOCATION_PUBLIC_VALUES', __('Puplic Location Values'));
 define('CONFIG_LABEL_LOCATION_STATUS', __('Location Status Element'));
 define('CONFIG_LABEL_LOCATION_STORAGE', __('Storage Location Element'));
 define('CONFIG_LABEL_LOCATION_WHO', __('Location Move By'));
 
 class LocationConfig extends ConfigOptions
 {
-    const OPTION_LOCATION = 'avantlocation_location';
     const OPTION_LOCATION_CURRENT = 'avantlocation_current';
     const OPTION_LOCATION_DATE = 'avantlocation_date';
     const OPTION_LOCATION_HISTORY = 'avantlocation_history';
     const OPTION_LOCATION_HISTORY_COLUMNS = 'avantlocation_history_columns';
-    const OPTION_LOCATION_RULE = 'avantlocation_rule';
+    const OPTION_LOCATION_PUBLIC = 'avantlocation_public';
+    const OPTION_LOCATION_PUBLIC_VALUES = 'avantlocation_rule';
     const OPTION_LOCATION_STATUS = 'avantlocation_status';
     const OPTION_LOCATION_STORAGE = 'avantlocation_storage';
     const OPTION_LOCATION_WHO = 'avantlocation_who';
-
-    const LOCATION_RULE_HIDE = 1;
-    const LOCATION_RULE_STATUS = 2;
-    const LOCATION_RULE_LOCATION = 3;
 
     public static function getOptionTextForCurrent()
     {
@@ -37,11 +33,7 @@ class LocationConfig extends ConfigOptions
 
     public static function getOptionTextForDate()
     {
-        if (self::configurationErrorsDetected())
-            $text = $_POST[self::OPTION_LOCATION_DATE];
-        else
-            $text = ItemMetadata::getElementNameFromId(get_option(self::OPTION_LOCATION_DATE));
-        return $text;
+        return get_option(self::OPTION_LOCATION_DATE);
     }
 
     public static function getOptionTextForHistory()
@@ -59,13 +51,18 @@ class LocationConfig extends ConfigOptions
         return $text;
     }
 
-    public static function getOptionTextForLocation()
+    public static function getOptionTextForPublic()
     {
         if (self::configurationErrorsDetected())
-            $text = $_POST[self::OPTION_LOCATION];
+            $text = $_POST[self::OPTION_LOCATION_PUBLIC];
         else
-            $text = ItemMetadata::getElementNameFromId(get_option(self::OPTION_LOCATION));
+            $text = ItemMetadata::getElementNameFromId(get_option(self::OPTION_LOCATION_PUBLIC));
         return $text;
+    }
+
+    public static function getOptionTextForPublicValues()
+    {
+        return get_option(self::OPTION_LOCATION_PUBLIC_VALUES);
     }
 
     public static function getOptionTextForStatus()
@@ -88,11 +85,7 @@ class LocationConfig extends ConfigOptions
 
     public static function getOptionTextForWho()
     {
-        if (self::configurationErrorsDetected())
-            $text = $_POST[self::OPTION_LOCATION_WHO];
-        else
-            $text = ItemMetadata::getElementNameFromId(get_option(self::OPTION_LOCATION_WHO));
-        return $text;
+        return get_option(self::OPTION_LOCATION_WHO);
     }
 
     public static function saveConfiguration()
@@ -101,7 +94,8 @@ class LocationConfig extends ConfigOptions
         self::saveOptionDataForDate();
         self::saveOptionDataForHistory();
         self::saveOptionDataForHistoryColumns();
-        self::saveOptionDataForLocation();
+        self::saveOptionDataForPublic();
+        self::saveOptionDataForPublicValues();
         self::saveOptionDataForStatus();
         self::saveOptionDataForStorage();
         self::saveOptionDataForWho();
@@ -139,13 +133,19 @@ class LocationConfig extends ConfigOptions
         set_option(self::OPTION_LOCATION_HISTORY_COLUMNS, $text);
     }
 
-    public static function saveOptionDataForLocation()
+    public static function saveOptionDataForPublic()
     {
-        $elementName = $_POST[self::OPTION_LOCATION];
+        $elementName = $_POST[self::OPTION_LOCATION_PUBLIC];
         $elementId = ItemMetadata::getElementIdForElementName($elementName);
         if ($elementId == 0)
-            throw new Omeka_Validate_Exception(self::OPTION_LOCATION. ': ' . __('"%s" is not an element.', $elementName));
-        set_option(self::OPTION_LOCATION, $elementId);
+            throw new Omeka_Validate_Exception(self::OPTION_LOCATION_PUBLIC. ': ' . __('"%s" is not an element.', $elementName));
+        set_option(self::OPTION_LOCATION_PUBLIC, $elementId);
+    }
+
+    public static function saveOptionDataForPublicValues()
+    {
+        $rule = $_POST[self::OPTION_LOCATION_PUBLIC_VALUES];
+        set_option(self::OPTION_LOCATION_PUBLIC_VALUES, $rule);
     }
 
     public static function saveOptionDataForStatus()
