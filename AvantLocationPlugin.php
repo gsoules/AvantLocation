@@ -33,21 +33,13 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
         $item = $args['record'];
 
         $this->assignPublicLocationValue($item);
-
-        $status = ItemMetadata::getElementTextForElementName($item, LocationConfig::getOptionTextForStatus());
-        $currentLocation = ItemMetadata::getElementTextForElementName($item, LocationConfig::getOptionTextForCurrent());
-
-        $this->createHistoryRow($item, $status, $currentLocation);
+        $this->createHistoryRow($item);
     }
 
     public function hookBeforeSaveItem($args)
     {
         $item = $args['record'];
-
-        $status = ItemMetadata::getElementTextForElementName($item, LocationConfig::getOptionTextForStatus());
-        $currentLocation = ItemMetadata::getElementTextForElementName($item, LocationConfig::getOptionTextForCurrent());
-
-        $this->validateLocationValues($item, $status, $currentLocation);
+        //$this->validateLocationValues($item);
     }
 
     public function hookConfig()
@@ -98,28 +90,77 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
         ItemMetadata::updateElementText($item, $publicElementId, $publicValue);
     }
 
-    protected function createHistoryRow($item, $status, $currentLocation): void
+    protected function createHistoryRow($item): void
     {
+        // Get the information that will go into a new history row.
         $date = LocationConfig::getOptionTextForDate();
+        if ($date == "")
+        {
+            $dateTime = new DateTime();
+            $date = $dateTime->format('Y-m-d');
+        }
+
         $who = LocationConfig::getOptionTextForWho();
+        if ($who == "")
+        {
+            $who = current_user()->username;
+        }
 
-        $row = "$date | $status | $currentLocation | $who";
-
-        $historyElementName = LocationConfig::getOptionTextForHistory();
-        $historyElementId = ItemMetadata::getElementIdForElementName($historyElementName);
-
-        $history = AvantCommon::getPostTextForElementName($historyElementName);
-
-
-        //$history = ItemMetadata::getElementTextForElementName($item, $historyElementName);
-        $history = $row . "<br />" . PHP_EOL . $history;
-        ItemMetadata::updateElementText($item, $historyElementId, $history);
-    }
-
-    protected function validateLocationValues($item, $status, $currentLocation): void
-    {
         $statusElementName = LocationConfig::getOptionTextForStatus();
         $currentElementName = LocationConfig::getOptionTextForCurrent();
+        $status = ItemMetadata::getElementTextForElementName($item, $statusElementName);
+        $currentLocation = ItemMetadata::getElementTextForElementName($item, $currentElementName);
+
+        // Get the current history from the post instead of by calling getElementTextForElementName
+        // because the latter call, during a save, causes the element text records to get locked
+        // which prevents them from being updated as needs to be done here to update the history.
+        $historyElementName = LocationConfig::getOptionTextForHistory();
+        $oldHistory = AvantCommon::getPostTextForElementName($historyElementName);
+
+        // Get the current history's first row.
+        $existingRows = array_map('trim', explode(PHP_EOL, $oldHistory));
+        $oldFirstRow = count($existingRows) > 0 ? $existingRows[0] : "";
+
+        // When the old first row is blank, that means, don't update the history.
+        $newFirstRow = "";
+        if ($oldFirstRow != "")
+        {
+            // Create a new first row.
+            $newFirstRow = "$date | $status | $currentLocation | $who";
+        }
+
+        // Compare the new and old first rows, ignoring case and white space.
+        // If they match, don't create a new history row.
+        if ($oldFirstRow)
+        {
+            if (strtolower(str_replace(' ', '', $newFirstRow)) == strtolower(str_replace(' ', '', $oldFirstRow)))
+                $newFirstRow = "";
+        }
+
+        $newHistory = $newFirstRow;
+        foreach ($existingRows as $row)
+        {
+            if ($row == "")
+                continue;
+            if ($newHistory != "")
+                $newHistory .= PHP_EOL;
+            $newHistory .= $row;
+        }
+
+        // Update the history.
+        $historyElementId = ItemMetadata::getElementIdForElementName($historyElementName);
+        ItemMetadata::updateElementText($item, $historyElementId, $newHistory);
+    }
+
+    protected function validateLocationValues($item): void
+    {
+        // This method ensures that both the location status and current location changed
+        // or that neither changed. It reports an error if only one or the other changed.
+
+        $statusElementName = LocationConfig::getOptionTextForStatus();
+        $currentElementName = LocationConfig::getOptionTextForCurrent();
+        $status = ItemMetadata::getElementTextForElementName($item, $statusElementName);
+        $currentLocation = ItemMetadata::getElementTextForElementName($item, $currentElementName);
 
         // Get the form values for status and current location.
         $newStatus = AvantCommon::getPostTextForElementName($statusElementName);
