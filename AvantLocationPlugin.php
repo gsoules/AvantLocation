@@ -101,25 +101,42 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
             $who = current_user()->username;
         }
 
+        // Get the location status.
         $statusElementName = LocationConfig::getOptionTextForStatus();
-        $currentElementName = LocationConfig::getOptionTextForCurrent();
-        $status = ItemMetadata::getElementTextForElementName($item, $statusElementName);
-        $currentLocation = ItemMetadata::getElementTextForElementName($item, $currentElementName);
+        $statusElementId = ItemMetadata::getElementIdForElementName($statusElementName);
+        $status = ItemMetadata::getElementTextFromElementId($item, $statusElementId);
 
-        // Get the current history from the post instead of by calling getElementTextForElementName
-        // because the latter call, during a save, causes the element text records to get locked
-        // which prevents them from being updated as needs to be done here to update the history.
+        // Get the temporary location.
+        $temporaryElementName = LocationConfig::getOptionTextForTemporary();
+        $temporaryElementId = ItemMetadata::getElementIdForElementName($temporaryElementName);
+        $temporaryLocation = ItemMetadata::getElementTextFromElementId($item, $temporaryElementId);
+
+        $historyLocation = $temporaryLocation;
+
+        if ($temporaryLocation == __("<none>"))
+        {
+            // Get the storage location.
+            $storageElementName = LocationConfig::getOptionTextForStorage();
+            $storageElementId = ItemMetadata::getElementIdForElementName($storageElementName);
+            $historyLocation = ItemMetadata::getElementTextFromElementId($item, $storageElementId);
+
+            // Set the temporary location to blank.
+            ItemMetadata::updateElementText($item, $temporaryElementId, "");
+        }
+
+        // Get the location history.
         $historyElementName = LocationConfig::getOptionTextForHistory();
-        $oldHistory = AvantCommon::getPostTextForElementName($historyElementName);
+        $historyElementId = ItemMetadata::getElementIdForElementName($historyElementName);
+        $oldHistory = ItemMetadata::getElementTextFromElementId($item, $historyElementId);
 
-        // Get the current history's first row.
+        // Get the history's first row.
         $existingRows = array_map('trim', explode(PHP_EOL, $oldHistory));
         $oldFirstRow = count($existingRows) > 0 ? $existingRows[0] : "";
 
-        // Create a new first row.
-        $newFirstRow = "$date | $status | $currentLocation | $who";
+        // Create a new first history row.
+        $newFirstRow = "$date | $status | $historyLocation | $who";
 
-        // Compare the new and old first rows, ignoring case and white space.
+        // Compare the new and old first history rows, ignoring case and white space.
         // If they match, don't add a new row.
         if (strtolower(str_replace(' ', '', $newFirstRow)) == strtolower(str_replace(' ', '', $oldFirstRow)))
             $newFirstRow = "";
@@ -136,22 +153,25 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
         }
 
         // Update the history.
-        $historyElementId = ItemMetadata::getElementIdForElementName($historyElementName);
         ItemMetadata::updateElementText($item, $historyElementId, $newHistory);
     }
 
     protected function detectLocationHistoryChange($item): void
     {
-        // Get the old location status and current location values;
+        // Get the old location status value.
         $statusElementName = LocationConfig::getOptionTextForStatus();
-        $currentElementName = LocationConfig::getOptionTextForCurrent();
-        $status = ItemMetadata::getElementTextForElementName($item, $statusElementName);
-        $currentLocation = ItemMetadata::getElementTextForElementName($item, $currentElementName);
+        $statusElementId = ItemMetadata::getElementIdForElementName($statusElementName);
+        $status = ItemMetadata::getElementTextFromElementId($item, $statusElementId);
 
-        // Get the form values for the location status and current location.
+        // Get the old temporary location value.
+        $temporaryElementName = LocationConfig::getOptionTextForTemporary();
+        $temporaryElementId = ItemMetadata::getElementIdForElementName($temporaryElementName);
+        $temporaryLocation = ItemMetadata::getElementTextFromElementId($item, $temporaryElementId);
+
+        // Get the new location status and temporary location values
         $newStatus = AvantCommon::getPostTextForElementName($statusElementName);
-        $newCurrent = AvantCommon::getPostTextForElementName($currentElementName);
+        $newtemporary = AvantCommon::getPostTextForElementName($temporaryElementName);
 
-        $this->locationHistoryChanged = $newStatus != $status || $newCurrent != $currentLocation;
+        $this->locationHistoryChanged = $newStatus != $status || $newtemporary != $temporaryLocation;
     }
 }

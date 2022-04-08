@@ -1,7 +1,7 @@
 <?php
 $view = get_view();
 
-$currentElementName = LocationConfig::getOptionTextForCurrent();
+$currentElementName = LocationConfig::getOptionTextForTemporary();
 $moveBy = LocationConfig::getOptionTextForWho();
 $moveDate = LocationConfig::getOptionTextForDate();
 $historyElementName = LocationConfig::getOptionTextForHistory();
@@ -22,18 +22,18 @@ $storageElementName = LocationConfig::getOptionTextForStorage();
         <label><?php echo CONFIG_LABEL_LOCATION_STORAGE; ?></label>
     </div>
     <div class="inputs five columns omega">
-        <p class="explanation"><?php echo __("The element used to store an item's permanent location storage."); ?></p>
+        <p class="explanation"><?php echo __("The element used to store an object's permanent location storage."); ?></p>
         <?php echo $view->formText(LocationConfig::OPTION_LOCATION_STORAGE, $storageElementName); ?>
     </div>
 </div>
 
 <div class="field">
     <div class="two columns alpha">
-        <label><?php echo CONFIG_LABEL_LOCATION_CURRENT; ?></label>
+        <label><?php echo CONFIG_LABEL_LOCATION_TEMPORARY; ?></label>
     </div>
     <div class="inputs five columns omega">
-        <p class="explanation"><?php echo __("The element used to store an item's current location."); ?></p>
-        <?php echo $view->formText(LocationConfig::OPTION_LOCATION_CURRENT, $currentElementName); ?>
+        <p class="explanation"><?php echo __("The element used to store an object's temporary location."); ?></p>
+        <?php echo $view->formText(LocationConfig::OPTION_LOCATION_TEMPORARY, $currentElementName); ?>
     </div>
 </div>
 
@@ -42,7 +42,7 @@ $storageElementName = LocationConfig::getOptionTextForStorage();
         <label><?php echo CONFIG_LABEL_LOCATION_STATUS; ?></label>
     </div>
     <div class="inputs five columns omega">
-        <p class="explanation"><?php echo __("The element used to store an item's location status."); ?></p>
+        <p class="explanation"><?php echo __("The element used to store an object's location status."); ?></p>
         <?php echo $view->formText(LocationConfig::OPTION_LOCATION_STATUS, $statusElementName); ?>
     </div>
 </div>
@@ -52,8 +52,18 @@ $storageElementName = LocationConfig::getOptionTextForStorage();
         <label><?php echo CONFIG_LABEL_LOCATION_PUBLIC; ?></label>
     </div>
     <div class="inputs five columns omega">
-        <p class="explanation"><?php echo __("The element used to store an item's public location."); ?></p>
+        <p class="explanation"><?php echo __("The element used to store an object's public location."); ?></p>
         <?php echo $view->formText(LocationConfig::OPTION_LOCATION_PUBLIC, $publicElementName); ?>
+    </div>
+</div>
+
+<div class="field">
+    <div class="two columns alpha">
+        <label><?php echo CONFIG_LABEL_LOCATION_PUBLIC_VALUES; ?></label>
+    </div>
+    <div class="inputs five columns omega">
+        <p class="explanation"><?php echo __("A comma-separated list of location values that can be public."); ?></p>
+        <?php echo $view->formText(LocationConfig::OPTION_LOCATION_PUBLIC_VALUES, $publicValues); ?>
     </div>
 </div>
 
@@ -62,7 +72,7 @@ $storageElementName = LocationConfig::getOptionTextForStorage();
         <label><?php echo CONFIG_LABEL_LOCATION_HISTORY; ?></label>
     </div>
     <div class="inputs five columns omega">
-        <p class="explanation"><?php echo __("The element used to store an item's location history."); ?></p>
+        <p class="explanation"><?php echo __("The element used to store an object's location history."); ?></p>
         <?php echo $view->formText(LocationConfig::OPTION_LOCATION_HISTORY, $historyElementName); ?>
     </div>
 </div>
@@ -74,16 +84,6 @@ $storageElementName = LocationConfig::getOptionTextForStorage();
     <div class="inputs five columns omega">
         <p class="explanation"><?php echo __("The names of the columns in the location history."); ?></p>
         <?php echo $view->formText(LocationConfig::OPTION_LOCATION_HISTORY_COLUMNS, $historyColumns); ?>
-    </div>
-</div>
-
-<div class="field">
-    <div class="two columns alpha">
-        <label><?php echo CONFIG_LABEL_LOCATION_PUBLIC_VALUES; ?></label>
-    </div>
-    <div class="inputs five columns omega">
-        <p class="explanation"><?php echo __("A comma-separated list of location values that can be public."); ?></p>
-        <?php echo $view->formText(LocationConfig::OPTION_LOCATION_PUBLIC_VALUES, $publicValues); ?>
     </div>
 </div>
 
