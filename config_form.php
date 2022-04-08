@@ -49,6 +49,16 @@ $storageElementName = LocationConfig::getOptionTextForStorage();
 
 <div class="field">
     <div class="two columns alpha">
+        <label><?php echo CONFIG_LABEL_LOCATION_PUBLIC; ?></label>
+    </div>
+    <div class="inputs five columns omega">
+        <p class="explanation"><?php echo __("The element used to store an item's public location."); ?></p>
+        <?php echo $view->formText(LocationConfig::OPTION_LOCATION_PUBLIC, $publicElementName); ?>
+    </div>
+</div>
+
+<div class="field">
+    <div class="two columns alpha">
         <label><?php echo CONFIG_LABEL_LOCATION_HISTORY; ?></label>
     </div>
     <div class="inputs five columns omega">
@@ -64,16 +74,6 @@ $storageElementName = LocationConfig::getOptionTextForStorage();
     <div class="inputs five columns omega">
         <p class="explanation"><?php echo __("The names of the columns in the location history."); ?></p>
         <?php echo $view->formText(LocationConfig::OPTION_LOCATION_HISTORY_COLUMNS, $historyColumns); ?>
-    </div>
-</div>
-
-<div class="field">
-    <div class="two columns alpha">
-        <label><?php echo CONFIG_LABEL_LOCATION_PUBLIC; ?></label>
-    </div>
-    <div class="inputs five columns omega">
-        <p class="explanation"><?php echo __("The element used to store an item's public location."); ?></p>
-        <?php echo $view->formText(LocationConfig::OPTION_LOCATION_PUBLIC, $publicElementName); ?>
     </div>
 </div>
 
