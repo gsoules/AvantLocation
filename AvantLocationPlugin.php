@@ -111,18 +111,21 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
         $temporaryElementId = ItemMetadata::getElementIdForElementName($temporaryElementName);
         $temporaryLocation = ItemMetadata::getElementTextFromElementId($item, $temporaryElementId);
 
+        $statusInStorage = LocationConfig::getOptionTextForStatusInStorage();
+
         $historyLocation = $temporaryLocation;
 
-        if ($temporaryLocation == "" || $temporaryLocation == __("<none>"))
+        if ($status == $statusInStorage)
         {
             // Get the storage location.
             $storageElementName = LocationConfig::getOptionTextForStorage();
             $storageElementId = ItemMetadata::getElementIdForElementName($storageElementName);
-            $historyLocation = ItemMetadata::getElementTextFromElementId($item, $storageElementId);
+            $storageLocation = ItemMetadata::getElementTextFromElementId($item, $storageElementId);
 
-            // Convert <none> to blank.
-            if ($temporaryLocation == __("<none>"))
-                ItemMetadata::updateElementText($item, $temporaryElementId, "");
+            $historyLocation = $storageLocation;
+
+            // Set the temporary location to blank.
+            ItemMetadata::updateElementText($item, $temporaryElementId, "");
         }
 
         // Get the location history.
@@ -169,6 +172,11 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
         $temporaryElementId = ItemMetadata::getElementIdForElementName($temporaryElementName);
         $temporaryLocation = ItemMetadata::getElementTextFromElementId($item, $temporaryElementId);
 
+        // Get the old temporary location value.
+        $temporaryElementName = LocationConfig::getOptionTextForTemporary();
+        $temporaryElementId = ItemMetadata::getElementIdForElementName($temporaryElementName);
+        $temporaryLocation = ItemMetadata::getElementTextFromElementId($item, $temporaryElementId);
+
         // Get the old storage location value.
         $storageElementName = LocationConfig::getOptionTextForStorage();
         $storageElementId = ItemMetadata::getElementIdForElementName($storageElementName);
@@ -183,5 +191,12 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
             $newStatus != $status ||
             $newTemporary != $temporaryLocation ||
             $newStorage != $storageLocation;
+
+        // Ensure that a temporary location is provided when the status is not in storage.
+        $statusInStorage = LocationConfig::getOptionTextForStatusInStorage();
+        if ($newStatus != $statusInStorage && $newTemporary == "")
+        {
+            AvantElements::addError($item, $temporaryElementName, __("You must choose a location except when the location status is '%s'.", $statusInStorage));
+        }
     }
 }

@@ -9,6 +9,7 @@ $historyColumns = LocationConfig::getOptionTextForHistoryColumns();
 $publicElementName = LocationConfig::getOptionTextForPublic();
 $publicValues = LocationConfig::getOptionTextForPublicValues();
 $statusElementName = LocationConfig::getOptionTextForStatus();
+$statusInStorage = LocationConfig::getOptionTextForStatusInStorage();
 $storageElementName = LocationConfig::getOptionTextForStorage();
 
 ?>
@@ -44,6 +45,16 @@ $storageElementName = LocationConfig::getOptionTextForStorage();
     <div class="inputs five columns omega">
         <p class="explanation"><?php echo __("The element used to store an object's location status."); ?></p>
         <?php echo $view->formText(LocationConfig::OPTION_LOCATION_STATUS, $statusElementName); ?>
+    </div>
+</div>
+
+<div class="field">
+    <div class="two columns alpha">
+        <label><?php echo CONFIG_LABEL_LOCATION_STATUS_IN_STORAGE; ?></label>
+    </div>
+    <div class="inputs five columns omega">
+        <p class="explanation"><?php echo __("The status used to mean that the object is in permanent storage."); ?></p>
+        <?php echo $view->formText(LocationConfig::OPTION_LOCATION_STATUS_IN_STORAGE, $statusInStorage); ?>
     </div>
 </div>
 

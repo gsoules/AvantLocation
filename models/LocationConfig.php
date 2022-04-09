@@ -6,6 +6,7 @@ define('CONFIG_LABEL_LOCATION_HISTORY_COLUMNS', __('Location History Columns'));
 define('CONFIG_LABEL_LOCATION_PUBLIC', __('Public Location Element'));
 define('CONFIG_LABEL_LOCATION_PUBLIC_VALUES', __('Puplic Location Values'));
 define('CONFIG_LABEL_LOCATION_STATUS', __('Location Status Element'));
+define('CONFIG_LABEL_LOCATION_STATUS_IN_STORAGE', __('In Storage Status'));
 define('CONFIG_LABEL_LOCATION_STORAGE', __('Storage Location Element'));
 define('CONFIG_LABEL_LOCATION_TEMPORARY', __('Temporary Location Element'));
 define('CONFIG_LABEL_LOCATION_WHO', __('Location Move By'));
@@ -18,6 +19,7 @@ class LocationConfig extends ConfigOptions
     const OPTION_LOCATION_PUBLIC = 'avantlocation_public';
     const OPTION_LOCATION_PUBLIC_VALUES = 'avantlocation_rule';
     const OPTION_LOCATION_STATUS = 'avantlocation_status';
+    const OPTION_LOCATION_STATUS_IN_STORAGE = 'avantlocation_status_in_storage';
     const OPTION_LOCATION_STORAGE = 'avantlocation_storage';
     const OPTION_LOCATION_TEMPORARY = 'avantlocation_temporary';
     const OPTION_LOCATION_WHO = 'avantlocation_who';
@@ -65,6 +67,11 @@ class LocationConfig extends ConfigOptions
         return $text;
     }
 
+    public static function getOptionTextForStatusInStorage()
+    {
+        return get_option(self::OPTION_LOCATION_STATUS_IN_STORAGE);
+    }
+
     public static function getOptionTextForStorage()
     {
         if (self::configurationErrorsDetected())
@@ -96,6 +103,7 @@ class LocationConfig extends ConfigOptions
         self::saveOptionDataForPublic();
         self::saveOptionDataForPublicValues();
         self::saveOptionDataForStatus();
+        self::saveOptionDataForStatusInStorage();
         self::saveOptionDataForStorage();
         self::saveOptionDataForTemporary();
         self::saveOptionDataForWho();
@@ -118,8 +126,9 @@ class LocationConfig extends ConfigOptions
 
     public static function saveOptionDataForHistoryColumns()
     {
-        $text = $_POST[self::OPTION_LOCATION_HISTORY_COLUMNS];
-        set_option(self::OPTION_LOCATION_HISTORY_COLUMNS, $text);
+        $columns = $_POST[self::OPTION_LOCATION_HISTORY_COLUMNS];
+        self::errorIfEmpty($columns, self::OPTION_LOCATION_HISTORY_COLUMNS, CONFIG_LABEL_LOCATION_HISTORY_COLUMNS);
+        set_option(self::OPTION_LOCATION_HISTORY_COLUMNS, $columns);
     }
 
     public static function saveOptionDataForPublic()
@@ -144,6 +153,13 @@ class LocationConfig extends ConfigOptions
         if ($elementId == 0)
             throw new Omeka_Validate_Exception(self::OPTION_LOCATION_STATUS. ': ' . __('"%s" is not an element.', $elementName));
         set_option(self::OPTION_LOCATION_STATUS, $elementId);
+    }
+
+    public static function saveOptionDataForStatusInStorage()
+    {
+        $status = $_POST[self::OPTION_LOCATION_STATUS_IN_STORAGE];
+        self::errorIfEmpty($status, self::OPTION_LOCATION_STATUS_IN_STORAGE, CONFIG_LABEL_LOCATION_STATUS_IN_STORAGE);
+        set_option(self::OPTION_LOCATION_STATUS_IN_STORAGE, $status);
     }
 
     public static function saveOptionDataForStorage()
