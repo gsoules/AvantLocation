@@ -169,10 +169,19 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
         $temporaryElementId = ItemMetadata::getElementIdForElementName($temporaryElementName);
         $temporaryLocation = ItemMetadata::getElementTextFromElementId($item, $temporaryElementId);
 
+        // Get the old storage location value.
+        $storageElementName = LocationConfig::getOptionTextForStorage();
+        $storageElementId = ItemMetadata::getElementIdForElementName($storageElementName);
+        $storageLocation = ItemMetadata::getElementTextFromElementId($item, $storageElementId);
+
         // Get the new location status and temporary location values
         $newStatus = AvantCommon::getPostTextForElementName($statusElementName);
-        $newtemporary = AvantCommon::getPostTextForElementName($temporaryElementName);
+        $newTemporary = AvantCommon::getPostTextForElementName($temporaryElementName);
+        $newStorage = AvantCommon::getPostTextForElementName($storageElementName);
 
-        $this->locationHistoryChanged = $newStatus != $status || $newtemporary != $temporaryLocation;
+        $this->locationHistoryChanged =
+            $newStatus != $status ||
+            $newTemporary != $temporaryLocation ||
+            $newStorage != $storageLocation;
     }
 }
