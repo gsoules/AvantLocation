@@ -172,11 +172,6 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
         $temporaryElementId = ItemMetadata::getElementIdForElementName($temporaryElementName);
         $temporaryLocation = ItemMetadata::getElementTextFromElementId($item, $temporaryElementId);
 
-        // Get the old temporary location value.
-        $temporaryElementName = LocationConfig::getOptionTextForTemporary();
-        $temporaryElementId = ItemMetadata::getElementIdForElementName($temporaryElementName);
-        $temporaryLocation = ItemMetadata::getElementTextFromElementId($item, $temporaryElementId);
-
         // Get the old storage location value.
         $storageElementName = LocationConfig::getOptionTextForStorage();
         $storageElementId = ItemMetadata::getElementIdForElementName($storageElementName);
@@ -192,11 +187,16 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
             $newTemporary != $temporaryLocation ||
             $newStorage != $storageLocation;
 
-        // Ensure that a temporary location is provided when the status is not in storage.
         $statusInStorage = LocationConfig::getOptionTextForStatusInStorage();
-        if ($newStatus != $statusInStorage && $newTemporary == "")
+        if ($newStatus == $statusInStorage)
         {
-            AvantElements::addError($item, $temporaryElementName, __("You must choose a location except when the location status is '%s'.", $statusInStorage));
+            if ($newStorage == "")
+                AvantElements::addError($item, "Error", __("You must choose a %s when %s is '%s'", $storageElementName, $statusElementName, $statusInStorage));
+        }
+        else
+        {
+            if ($newTemporary == "")
+                AvantElements::addError($item, "Error", __("You must choose a %s except when %s is '%s'", $temporaryElementName, $statusElementName, $statusInStorage));
         }
     }
 }
