@@ -1,4 +1,4 @@
-# AvantLocation(plugin for Omeka Classic)
+# AvantLocation (plugin for Omeka Classic)
 
 Documentation for this plugin is located at <https://digitalarchive.us/docs/plugins/avantlocation>.
 
@@ -28,6 +28,6 @@ Copyright
 ---------
 
 * Created by [gsoules](https://github.com/gsoules)
-* Copyright George Soules, 2016-2022.
+* Copyright George Soules, 2022.
 
  
