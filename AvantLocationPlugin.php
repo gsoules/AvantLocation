@@ -162,6 +162,10 @@ class AvantLocationPlugin extends Omeka_Plugin_AbstractPlugin
 
     protected function detectLocationHistoryChange($item): void
     {
+        // Ignore this call when nothing has been posted as is the case when the search_texts table is re-indexed.
+        if (!isset($_POST['Elements']))
+            return;
+
         // Get the old location status value.
         $statusElementName = LocationConfig::getOptionTextForStatus();
         $statusElementId = ItemMetadata::getElementIdForElementName($statusElementName);
